@@ -130,7 +130,7 @@ func decode(x []byte) Snes {
 	snes.romSize = int(math.Pow(2, float64(romSize)) / 125)
 	//SRAM Size
 	if sramSize != 0 {
-		snes.sram = int(16 * math.Pow(2, float64(sramSize-1)))
+		snes.sram = (int(16 * math.Pow(2, float64(sramSize-1)))) / 8
 	}
 	/*
 		switch int(sramSize) {
