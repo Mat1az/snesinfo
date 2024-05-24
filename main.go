@@ -56,25 +56,20 @@ func decode(x []byte) Snes {
 	bitString := fmt.Sprintf("%08b", romLayout)
 	a, _ := strconv.ParseInt(string(bitString[3]), 2, 8)
 	b, _ := strconv.ParseInt(string(bitString[5]), 2, 8)
-	c, _ := strconv.ParseInt(string(bitString[6]), 2, 8)
+	//c, _ := strconv.ParseInt(string(bitString[6]), 2, 8)
 	d, _ := strconv.ParseInt(string(bitString[7]), 2, 8)
 	var str strings.Builder
-	//FIXME is ExLo/ExHi && Lo/Hi complementary? do nested if so
-	if a == 0 {
-		str.WriteString("SlowROM/")
-	} else {
-		str.WriteString("FastROM/")
-	}
 	if b == 1 {
-		str.WriteString("ExHiROM")
-	}
-	if c == 1 {
-		str.WriteString("ExLoROM")
-	}
-	if d == 0 {
-		str.WriteString("LoROM")
+		str.WriteString("ExHiROM/")
+	} else if d == 0 {
+		str.WriteString("LoROM/")
 	} else {
-		str.WriteString("HiROM")
+		str.WriteString("HiROM/")
+	}
+	if a == 0 {
+		str.WriteString("SlowROM")
+	} else {
+		str.WriteString("FastROM")
 	}
 
 	snes.romLayout = str.String()
@@ -228,6 +223,7 @@ func doChecksum(f *os.File) int {
 		toTest = []int64{0x7FC0, 0xFFC0}
 	}
 	//FIXME Some few roms/hackroms have both LoROM/HiROM valid, extra check methods needed
+	//FIXME Some hackroms have no valid checksum, manual interventions required
 	for i, offset := range toTest {
 		f.Seek(offset+28, 0)
 		f.Read(checksum)
@@ -279,7 +275,7 @@ func getSnes(f *os.File) string {
 		//fmt.Println("found case 3")
 	default: //Invalid ROM
 		//fmt.Println("found invalid")
-		return "Invalid ROM"
+		return "Invalid ROM/HackROM"
 	}
 	f.Seek(offset, 0)
 	f.Read(rom)
