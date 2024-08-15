@@ -1,28 +1,31 @@
 pkgname=snesinfo-git
 _pkgname=snesinfo
-pkgver=latest.r0.g368459f
+pkgver=0.0.1
 pkgrel=1
-arch=('i686' 'x86_64')
-url='https://github.com/Mat1az/snesinfo'
-source=('git+https://github.com/Mat1az/snesinfo.git')
-depends=()
+pkgdesc='A Simple Tool for SNES ROM Info'
+arch=('x86_64')
+url="https://github.com/Mat1az/snesinfo"
+license=('LGPL')
 makedepends=('go')
-sha1sums=('SKIP')
+source=("git+https://github.com/Mat1az/snesinfo.git")
+md5sums=('SKIP')
+options=('!debug')
 
-pkgver() {
-  cd "$srcdir/$_pkgname"
-  ( set -o pipefail
-    git describe --long --tags 2>/dev/null | sed 's/\([^-]*-g\)/r\1/;s/-/./g' ||
-    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-  )
+prepare(){
+  cd "$_pkgname"
+  mkdir -p build/
 }
 
-build(){
-  cd "$srcdir/$_pkgname"
-  GO111MODULE=on go build -o "$srcdir/bin/snesinfo"
+build() {
+  cd "$_pkgname"
+  export CGO_CPPFLAGS="${CPPFLAGS}"
+  export CGO_CFLAGS="${CFLAGS}"
+  export CGO_CXXFLAGS="${CXXFLAGS}"
+  export CGO_LDFLAGS="${LDFLAGS}"
+  go build -o build/
 }
 
 package() {
-  cd "$srcdir/bin"
-  install -Dm755 'snesinfo' "$pkgdir/usr/bin/snesinfo"
+  cd "$_pkgname"
+  install -Dm755 build/$_pkgname "$pkgdir"/usr/bin/$_pkgname
 }
