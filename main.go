@@ -25,7 +25,7 @@ type Snes struct {
 }
 
 func (s *Snes) String() string {
-	return fmt.Sprintf("%s,%s,%s,%d,%d,%s,%s,%s,%s,%s", s.romName, s.romLayout, s.romType, s.romSize, s.sram, s.country, s.license, s.version, s.checkC, s.check)
+	return fmt.Sprintf("%s,%s,%s,%dMb,%dKiB,%s,%s,%s,%s,%s", s.romName, s.romLayout, s.romType, s.romSize, s.sram, s.country, s.license, s.version, s.checkC, s.check)
 }
 
 func decode(x []byte) Snes {
@@ -40,7 +40,7 @@ func decode(x []byte) Snes {
 	var version byte
 	checkComp := make([]byte, 2)
 	checksum := make([]byte, 2)
-	copy(romName, x[0:21])
+	copy(romName, x[0:20])
 	romLayout = x[21]
 	romType = x[22]
 	romSize = x[23]
@@ -56,15 +56,22 @@ func decode(x []byte) Snes {
 	bitString := fmt.Sprintf("%08b", romLayout)
 	a, _ := strconv.ParseInt(string(bitString[3]), 2, 8)
 	b, _ := strconv.ParseInt(string(bitString[5]), 2, 8)
-	//c, _ := strconv.ParseInt(string(bitString[6]), 2, 8)
+	c, _ := strconv.ParseInt(string(bitString[6]), 2, 8)
 	d, _ := strconv.ParseInt(string(bitString[7]), 2, 8)
 	var str strings.Builder
 	if b == 1 {
 		str.WriteString("ExHiROM/")
-	} else if d == 0 {
-		str.WriteString("LoROM/")
 	} else {
-		str.WriteString("HiROM/")
+		if c == 1 {
+			//Special Case SA-1/SDD-1
+			str.WriteString("LoROM/")
+		} else {
+			if d == 0 {
+				str.WriteString("LoROM/")
+			} else {
+				str.WriteString("HiROM/")
+			}
+		}
 	}
 	if a == 0 {
 		str.WriteString("SlowROM")
